@@ -351,10 +351,16 @@ class TwitchMinerTelegramBot:
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
     logging.basicConfig(level=logging.INFO)
 
-    TOKEN = "8180467830:AAHKkivatT_oWSElQW0ofSjfVkhSxhRbhAg"
-    CHAT_ID = 1294936940
+    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-    bot = TwitchMinerTelegramBot(TOKEN, CHAT_ID)
+    if not TOKEN or not CHAT_ID:
+        raise RuntimeError("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID in .env")
+
+    bot = TwitchMinerTelegramBot(TOKEN, int(CHAT_ID))
     bot.start()
