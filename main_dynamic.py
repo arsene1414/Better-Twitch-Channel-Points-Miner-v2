@@ -21,10 +21,10 @@ try:
 except ImportError:
     print("⚠️ python-dotenv not installed, using default values")
 
-TWITCH_USERNAME = os.getenv("TWITCH_USERNAME", "arsene144")
-TWITCH_PASSWORD = os.getenv("TWITCH_PASSWORD", "write-your-secure-psw")
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8180467830:AAHKkivatT_oWSElQW0ofSjfVkhSxhRbhAg")
-TELEGRAM_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID", "1294936940"))
+TWITCH_USERNAME = os.getenv("TWITCH_USERNAME")
+TWITCH_PASSWORD = os.getenv("TWITCH_PASSWORD")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
 ANALYTICS_HOST = os.getenv("ANALYTICS_HOST", "127.0.0.1")
 ANALYTICS_PORT = int(os.getenv("ANALYTICS_PORT", "5000"))
 
