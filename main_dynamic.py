@@ -17,9 +17,9 @@ try:
     from dotenv import load_dotenv
 
     load_dotenv()
-    print("✅ Environment variables loaded from .env")
+    print("âœ… Environment variables loaded from .env")
 except ImportError:
-    print("⚠️ python-dotenv not installed, using default values")
+    print("âš ï¸ python-dotenv not installed, using default values")
 
 TWITCH_USERNAME = os.getenv("TWITCH_USERNAME")
 TWITCH_PASSWORD = os.getenv("TWITCH_PASSWORD")
@@ -85,46 +85,46 @@ def start_telegram_bot(miner_instance):
     bot_thread.name = "Telegram Bot Thread"
     bot_thread.start()
 
-    logging.info("🤖 Telegram management bot started!")
+    logging.info("ðŸ¤– Telegram management bot started!")
     return bot
 
 
 def main():
     """Main function"""
     print("""
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   🎮 Twitch Channel Points Miner - Dynamic Edition 🤖        ║
-║                                                               ║
-║   ✨ Features:                                                ║
-║   • Dynamic streamer management via Telegram                 ║
-║   • Modify settings without restart                          ║
-║   • Configuration stored in JSON                             ║
-║                                                               ║
-║   📱 Available Telegram commands:                            ║
-║   • /start - Show help                                       ║
-║   • /add <username> - Add a streamer                         ║
-║   • /remove <username> - Remove a streamer                   ║
-║   • /list - View all streamers                               ║
-║   • /status - Real-time status                               ║
-║   • /stats - Global statistics                               ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
+â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
+â•‘                                                               â•‘
+â•‘   ðŸŽ® Twitch Channel Points Miner - Dynamic Edition ðŸ¤–        â•‘
+â•‘                                                               â•‘
+â•‘   âœ¨ Features:                                                â•‘
+â•‘   â€¢ Dynamic streamer management via Telegram                 â•‘
+â•‘   â€¢ Modify settings without restart                          â•‘
+â•‘   â€¢ Configuration stored in JSON                             â•‘
+â•‘                                                               â•‘
+â•‘   ðŸ“± Available Telegram commands:                            â•‘
+â•‘   â€¢ /start - Show help                                       â•‘
+â•‘   â€¢ /add <username> - Add a streamer                         â•‘
+â•‘   â€¢ /remove <username> - Remove a streamer                   â•‘
+â•‘   â€¢ /list - View all streamers                               â•‘
+â•‘   â€¢ /status - Real-time status                               â•‘
+â•‘   â€¢ /stats - Global statistics                               â•‘
+â•‘                                                               â•‘
+â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     """)
 
-    print("📂 Loading configuration from streamers_config.json...")
+    print("ðŸ“‚ Loading configuration from streamers_config.json...")
     streamers = load_streamers_from_config()
 
     if not streamers:
-        print("⚠️ No streamers loaded! Check your configuration file.")
-        print("💡 A default file has been created. Edit it and restart the script.")
+        print("âš ï¸ No streamers loaded! Check your configuration file.")
+        print("ðŸ’¡ A default file has been created. Edit it and restart the script.")
         return
 
-    print(f"✅ {len(streamers)} streamers loaded successfully!\n")
+    print(f"âœ… {len(streamers)} streamers loaded successfully!\n")
 
     telegram_bot = start_telegram_bot(twitch_miner)
 
-    print("🚀 Starting mining...\n")
+    print("ðŸš€ Starting mining...\n")
     print("=" * 60)
 
     twitch_miner.mine(

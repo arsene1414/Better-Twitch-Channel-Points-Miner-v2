@@ -59,34 +59,34 @@ class AutoStatsReporter:
             reverse=True
         )[:5]
 
-        message = "📊 **Automatic Statistics Report**\n\n"
-        message += f"🕐 Generated on: {datetime.now().strftime('%m/%d/%Y at %H:%M')}\n\n"
+        message = "ðŸ“Š **Automatic Statistics Report**\n\n"
+        message += f"ðŸ• Generated on: {datetime.now().strftime('%m/%d/%Y at %H:%M')}\n\n"
 
-        message += "**📈 Overview**\n"
-        message += f"💰 Total points: {total_points:,}\n"
-        message += f"📊 Points gained: +{total_gained:,}\n"
-        message += f"🎮 Streamers followed: {len(self.miner.streamers)}\n"
-        message += f"🟢 Online: {online_count} | 🔴 Offline: {offline_count}\n"
+        message += "**ðŸ“ˆ Overview**\n"
+        message += f"ðŸ’° Total points: {total_points:,}\n"
+        message += f"ðŸ“Š Points gained: +{total_gained:,}\n"
+        message += f"ðŸŽ® Streamers followed: {len(self.miner.streamers)}\n"
+        message += f"ðŸŸ¢ Online: {online_count} | ðŸ”´ Offline: {offline_count}\n"
 
         if uptime:
             hours = int(uptime.total_seconds() // 3600)
             minutes = int((uptime.total_seconds() % 3600) // 60)
-            message += f"⏱️ Uptime: {hours}h {minutes}m\n"
+            message += f"â±ï¸ Uptime: {hours}h {minutes}m\n"
 
-        message += f"\n**🏆 Top 5 streamers (by points)**\n"
+        message += f"\n**ðŸ† Top 5 streamers (by points)**\n"
         for i, streamer in enumerate(top_streamers, 1):
-            status = "🟢" if streamer.is_online else "🔴"
+            status = "ðŸŸ¢" if streamer.is_online else "ðŸ”´"
             message += f"{i}. {status} {streamer.username}: {streamer.channel_points:,} pts\n"
 
         if uptime and uptime.total_seconds() > 0:
             points_per_hour = total_gained / (uptime.total_seconds() / 3600)
-            message += f"\n📈 Average: {points_per_hour:.1f} points/hour"
+            message += f"\nðŸ“ˆ Average: {points_per_hour:.1f} points/hour"
 
         return message
 
     async def start_reporting(self):
         """Start automatic report sending"""
-        logger.info(f"📊 Auto Stats Reporter started (interval: {self.interval_hours}h)")
+        logger.info(f"ðŸ“Š Auto Stats Reporter started (interval: {self.interval_hours}h)")
 
         interval_seconds = self.interval_hours * 3600
 
@@ -97,9 +97,9 @@ class AutoStatsReporter:
                 report = self.generate_report()
                 if report:
                     if self._send_telegram_message(report):
-                        logger.info("✅ Statistics report sent")
+                        logger.info("âœ… Statistics report sent")
                     else:
-                        logger.error("❌ Failed to send report")
+                        logger.error("âŒ Failed to send report")
 
             except Exception as e:
                 logger.error(f"Error in reporter: {e}")
@@ -133,12 +133,12 @@ def start_auto_reporter(miner_instance, telegram_token, chat_id, interval_hours=
     reporter_thread.name = "Auto Stats Reporter"
     reporter_thread.start()
 
-    logger.info(f"🤖 Auto Stats Reporter started (reports every {interval_hours}h)")
+    logger.info(f"ðŸ¤– Auto Stats Reporter started (reports every {interval_hours}h)")
     return reporter
 
 
 if __name__ == "__main__":
-    print("⚠️ This module should be imported in main_dynamic.py")
+    print("âš ï¸ This module should be imported in main_dynamic.py")
     print("\nAdd in your main_dynamic.py after twitch_miner.mine():")
     print("""
     from auto_stats_reporter import start_auto_reporter

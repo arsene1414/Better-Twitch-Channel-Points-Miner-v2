@@ -52,7 +52,7 @@ def create_default_config():
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(default_config, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"✅ Configuration file created: {CONFIG_FILE}")
+    logger.info(f"âœ… Configuration file created: {CONFIG_FILE}")
     return default_config
 
 
@@ -60,15 +60,15 @@ def load_streamers_from_config():
     """Load streamers from JSON configuration file"""
 
     if not os.path.exists(CONFIG_FILE):
-        logger.warning(f"⚠️ File {CONFIG_FILE} not found. Creating default config...")
+        logger.warning(f"âš ï¸ File {CONFIG_FILE} not found. Creating default config...")
         config = create_default_config()
     else:
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-            logger.info(f"✅ Configuration loaded from {CONFIG_FILE}")
+            logger.info(f"âœ… Configuration loaded from {CONFIG_FILE}")
         except Exception as e:
-            logger.error(f"❌ Error loading config: {e}")
+            logger.error(f"âŒ Error loading config: {e}")
             config = create_default_config()
 
     streamers_list = []
@@ -142,13 +142,13 @@ def load_streamers_from_config():
             streamer = Streamer(username, settings=streamer_settings)
             streamers_list.append(streamer)
 
-            logger.info(f"✅ Streamer loaded: {username}")
+            logger.info(f"âœ… Streamer loaded: {username}")
 
         except Exception as e:
-            logger.error(f"❌ Error loading streamer {streamer_data.get('username', 'Unknown')}: {e}")
+            logger.error(f"âŒ Error loading streamer {streamer_data.get('username', 'Unknown')}: {e}")
             continue
 
-    logger.info(f"📊 Total of {len(streamers_list)} streamers loaded from configuration")
+    logger.info(f"ðŸ“Š Total of {len(streamers_list)} streamers loaded from configuration")
     return streamers_list
 
 
@@ -185,13 +185,13 @@ def export_current_config_to_json(streamers_list):
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"✅ Configuration exported to {output_file}")
+    logger.info(f"âœ… Configuration exported to {output_file}")
     return output_file
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     streamers = load_streamers_from_config()
-    print(f"\n✅ {len(streamers)} streamers loaded successfully!")
+    print(f"\nâœ… {len(streamers)} streamers loaded successfully!")
     for s in streamers:
         print(f"  - {s.username}")
