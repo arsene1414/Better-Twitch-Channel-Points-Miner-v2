@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -331,6 +332,9 @@ class TwitchMinerTelegramBot:
 
     def start(self):
         """Start the Telegram bot"""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         app = Application.builder().token(self.token).build()
 
         app.add_handler(CommandHandler("start", self.cmd_start))

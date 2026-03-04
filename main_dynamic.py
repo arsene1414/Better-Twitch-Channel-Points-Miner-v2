@@ -12,7 +12,6 @@ from TwitchChannelPointsMiner.classes.Settings import Priority, Events, Follower
 
 from TelegramBot import TwitchMinerTelegramBot
 from config_loader import load_streamers_from_config
-
 try:
     from dotenv import load_dotenv
 

@@ -151,31 +151,6 @@
       }
     },
     {
-      "username": "godsunaa",
-      "settings": {
-        "make_predictions": false,
-        "follow_raid": true,
-        "claim_drops": true,
-        "watch_streak": true,
-        "community_goals": true,
-        "bet": {
-          "strategy": "SMART",
-          "percentage": 5,
-          "stealth_mode": true,
-          "percentage_gap": 20,
-          "max_points": 1000,
-          "delay_mode": "FROM_END",
-          "delay": 6,
-          "minimum_points": 20000,
-          "filter_condition": {
-            "by": "TOTAL_USERS",
-            "where": "LTE",
-            "value": 800
-          }
-        }
-      }
-    },
-    {
       "username": "kyousuke999",
       "settings": {
         "make_predictions": false,
@@ -574,6 +549,29 @@
           }
         }
       }
+    },
+    {
+      "username": "lithbibi",
+      "settings": {
+        "make_predictions": false,
+        "follow_raid": true,
+        "claim_drops": true,
+        "watch_streak": true,
+        "community_goals": true,
+        "bet": {
+          "strategy": "SMART",
+          "percentage": 5,
+          "stealth_mode": true,
+          "percentage_gap": 20,
+          "max_points": 1000,
+          "filter_condition": {
+            "by": "TOTAL_USERS",
+            "where": "LTE",
+            "value": 800
+          }
+        }
+      },
+      "added_at": "2026-03-03T19:22:29.003202"
     }
   ],
   "global_settings": {
