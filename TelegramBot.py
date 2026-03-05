@@ -75,38 +75,39 @@ class TwitchMinerTelegramBot:
 
     async def cmd_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         help_text = """
-*Twitch Channel Points Miner - Management Bot*
+🎮 *Twitch Channel Points Miner*
 
-*Streamer Management:*
+📋 *Streamer Management:*
 -> /add <username> - Add a streamer
 -> /remove <username> - Remove a streamer
 -> /list - Show all streamers
 -> /status - Check streamers online status
 
-*Settings:*
+⚙️ *Settings:*
 -> /set\_bet <username> <percentage> - Modify bet %
 -> /set\_max\_points <username> <points> - Modify max\_points
 -> /enable\_predictions <username> - Enable predictions
 -> /disable\_predictions <username> - Disable predictions
 
-*Information:*
+ℹ️ *Information:*
+-> /online - Show currently live streamers
 -> /stats - Global statistics
 -> /help - Show this help
 
-Note: Changes are applied immediately without restart!
+⚡ Changes are applied immediately without restart!
         """
         await update.message.reply_text(help_text, parse_mode="Markdown")
 
     async def cmd_add(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
-            await update.message.reply_text("Usage: /add <username>")
+            await update.message.reply_text("ℹ️ Usage: /add <username>")
             return
 
         username = context.args[0].lower().strip()
         config = self._load_config()
 
         if any(s.get("username") == username for s in config["streamers"]):
-            await update.message.reply_text(f"[!] {username} is already in the list!")
+            await update.message.reply_text(f"⚠️ {username} is already in the list!")
             return
 
         new_streamer = {
@@ -148,11 +149,11 @@ Note: Changes are applied immediately without restart!
                 parse_mode="Markdown"
             )
         else:
-            await update.message.reply_text("[-] Error adding streamer")
+            await update.message.reply_text("❌ Error adding streamer")
 
     async def cmd_remove(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
-            await update.message.reply_text("Usage: /remove <username>")
+            await update.message.reply_text("ℹ️ Usage: /remove <username>")
             return
 
         username = context.args[0].lower().strip()
@@ -162,7 +163,7 @@ Note: Changes are applied immediately without restart!
         config["streamers"] = [s for s in config["streamers"] if s.get("username") != username]
 
         if len(config["streamers"]) == initial_count:
-            await update.message.reply_text(f"[!] {username} is not in the list!")
+            await update.message.reply_text(f"⚠️ {username} is not in the list!")
             return
 
         if self._save_config(config):
@@ -170,20 +171,20 @@ Note: Changes are applied immediately without restart!
                 await self._remove_streamer_from_running_miner(username)
 
             await update.message.reply_text(
-                f"[-] Streamer *{username}* removed successfully!",
+                f"✅ Streamer *{username}* removed successfully!",
                 parse_mode="Markdown"
             )
         else:
-            await update.message.reply_text("[-] Error removing streamer")
+            await update.message.reply_text("❌ Error removing streamer")
 
     async def cmd_list(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         config = self._load_config()
 
         if not config["streamers"]:
-            await update.message.reply_text("No streamers configured!")
+            await update.message.reply_text("📭 No streamers configured!")
             return
 
-        message = "*Streamers List:*\n\n"
+        message = "📋 *Streamers List:*\n\n"
         for i, streamer in enumerate(config["streamers"], 1):
             username = streamer.get("username", "Unknown")
             predictions = "on" if streamer.get("settings", {}).get("make_predictions") else "off"
@@ -191,24 +192,24 @@ Note: Changes are applied immediately without restart!
             max_pts = streamer.get("settings", {}).get("bet", {}).get("max_points", 1000)
 
             message += f"{i}. *{username}*\n"
-            message += f"   -> Predictions: {predictions}\n"
-            message += f"   -> Bet: {bet_pct}% (max: {max_pts} pts)\n\n"
+            message += f"   🎯 Predictions: {predictions}\n"
+            message += f"   💰 Bet: {bet_pct}% (max: {max_pts} pts)\n\n"
 
         await update.message.reply_text(message, parse_mode="Markdown")
 
     async def cmd_status(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self.miner or not self.miner.running:
-            await update.message.reply_text("[!] Miner is not running!")
+            await update.message.reply_text("⚠️ Miner is not running!")
             return
 
         # restore persisted timestamps before building the message
         self._restore_timestamps_from_cache()
 
-        message = "*Streamers Status:*\n\n"
+        message = "🎮 *Streamers Status:*\n\n"
         online_count = 0
 
         for streamer in self.miner.streamers:
-            status = "[ONLINE]" if streamer.is_online else "[OFFLINE]"
+            status = "🟢 ONLINE" if streamer.is_online else "🔴 OFFLINE"
             points = f"{streamer.channel_points:,}" if hasattr(streamer, 'channel_points') else "N/A"
 
             if streamer.is_online:
@@ -228,15 +229,36 @@ Note: Changes are applied immediately without restart!
                     timing = "never seen online"
 
             message += f"{status} *{streamer.username}*\n"
-            message += f"   -> Points: {points}\n"
-            message += f"   -> {timing}\n\n"
+            message += f"   💰 Points: {points}\n"
+            message += f"   🕐 {timing}\n\n"
 
-        message += f"\nTotal: {online_count}/{len(self.miner.streamers)} online"
+        message += f"\n📊 Total: {online_count}/{len(self.miner.streamers)} online"
+        await update.message.reply_text(message, parse_mode="Markdown")
+
+    async def cmd_online(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if not self.miner or not self.miner.running:
+            await update.message.reply_text("⚠️ Miner is not running!")
+            return
+
+        online_streamers = [s for s in self.miner.streamers if s.is_online]
+
+        if not online_streamers:
+            await update.message.reply_text("📭 No streamers currently online.")
+            return
+
+        message = f"🟢 *Online Streamers ({len(online_streamers)}):*\n\n"
+        for streamer in online_streamers:
+            points = f"{streamer.channel_points:,}" if hasattr(streamer, 'channel_points') else "N/A"
+            online_since = datetime.fromtimestamp(streamer.online_at).strftime("%d/%m %H:%M") if streamer.online_at else "unknown"
+            message += f"🟢 *{streamer.username}*\n"
+            message += f"   💰 Points: {points}\n"
+            message += f"   🕐 Online since {online_since}\n\n"
+
         await update.message.reply_text(message, parse_mode="Markdown")
 
     async def cmd_set_bet(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if len(context.args) < 2:
-            await update.message.reply_text("Usage: /set_bet <username> <percentage>")
+            await update.message.reply_text("ℹ️ Usage: /set_bet <username> <percentage>")
             return
 
         username = context.args[0].lower().strip()
@@ -245,7 +267,7 @@ Note: Changes are applied immediately without restart!
             if percentage < 1 or percentage > 100:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text("[-] Percentage must be between 1 and 100!")
+            await update.message.reply_text("❌ Percentage must be between 1 and 100!")
             return
 
         config = self._load_config()
@@ -258,20 +280,20 @@ Note: Changes are applied immediately without restart!
                 break
 
         if not streamer_found:
-            await update.message.reply_text(f"[!] Streamer {username} not found!")
+            await update.message.reply_text(f"⚠️ Streamer {username} not found!")
             return
 
         if self._save_config(config):
             await update.message.reply_text(
-                f"[+] Bet percentage for *{username}* updated: {percentage}%",
+                f"✅ Bet percentage for *{username}* updated: {percentage}%",
                 parse_mode="Markdown"
             )
         else:
-            await update.message.reply_text("[-] Error updating config")
+            await update.message.reply_text("❌ Error updating config")
 
     async def cmd_set_max_points(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if len(context.args) < 2:
-            await update.message.reply_text("Usage: /set_max_points <username> <points>")
+            await update.message.reply_text("ℹ️ Usage: /set_max_points <username> <points>")
             return
 
         username = context.args[0].lower().strip()
@@ -280,7 +302,7 @@ Note: Changes are applied immediately without restart!
             if max_points < 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text("[-] Points must be a positive number!")
+            await update.message.reply_text("❌ Points must be a positive number!")
             return
 
         config = self._load_config()
@@ -293,20 +315,20 @@ Note: Changes are applied immediately without restart!
                 break
 
         if not streamer_found:
-            await update.message.reply_text(f"[!] Streamer {username} not found!")
+            await update.message.reply_text(f"⚠️ Streamer {username} not found!")
             return
 
         if self._save_config(config):
             await update.message.reply_text(
-                f"[+] Max points for *{username}* updated: {max_points}",
+                f"✅ Max points for *{username}* updated: {max_points}",
                 parse_mode="Markdown"
             )
         else:
-            await update.message.reply_text("[-] Error updating config")
+            await update.message.reply_text("❌ Error updating config")
 
     async def cmd_enable_predictions(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
-            await update.message.reply_text("Usage: /enable_predictions <username>")
+            await update.message.reply_text("ℹ️ Usage: /enable_predictions <username>")
             return
 
         username = context.args[0].lower().strip()
@@ -314,7 +336,7 @@ Note: Changes are applied immediately without restart!
 
     async def cmd_disable_predictions(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
-            await update.message.reply_text("Usage: /disable_predictions <username>")
+            await update.message.reply_text("ℹ️ Usage: /disable_predictions <username>")
             return
 
         username = context.args[0].lower().strip()
@@ -331,21 +353,21 @@ Note: Changes are applied immediately without restart!
                 break
 
         if not streamer_found:
-            await update.message.reply_text(f"[!] Streamer {username} not found!")
+            await update.message.reply_text(f"⚠️ Streamer {username} not found!")
             return
 
         if self._save_config(config):
-            status = "enabled [on]" if enabled else "disabled [off]"
+            status = "✅ enabled" if enabled else "❌ disabled"
             await update.message.reply_text(
-                f"Predictions {status} for *{username}*",
+                f"🎯 Predictions {status} for *{username}*",
                 parse_mode="Markdown"
             )
         else:
-            await update.message.reply_text("[-] Error updating config")
+            await update.message.reply_text("❌ Error updating config")
 
     async def cmd_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self.miner or not self.miner.running:
-            await update.message.reply_text("[!] Miner is not running!")
+            await update.message.reply_text("⚠️ Miner is not running!")
             return
 
         total_points = sum(s.channel_points for s in self.miner.streamers)
@@ -353,13 +375,13 @@ Note: Changes are applied immediately without restart!
 
         uptime = datetime.now() - self.miner.start_datetime if self.miner.start_datetime else None
 
-        message = "*Global Statistics:*\n\n"
-        message += f"-> Total points: {total_points:,}\n"
-        message += f"-> Streamers: {len(self.miner.streamers)}\n"
-        message += f"-> Online: {online}\n"
+        message = "📊 *Global Statistics:*\n\n"
+        message += f"💰 Total points: {total_points:,}\n"
+        message += f"🎮 Streamers: {len(self.miner.streamers)}\n"
+        message += f"🟢 Online: {online}\n"
         if uptime:
-            message += f"-> Uptime: {str(uptime).split('.')[0]}\n"
-        message += f"-> Session: {self.miner.session_id[:8]}..."
+            message += f"⏱️ Uptime: {str(uptime).split('.')[0]}\n"
+        message += f"🔑 Session: {self.miner.session_id[:8]}..."
 
         await update.message.reply_text(message, parse_mode="Markdown")
 
@@ -490,6 +512,7 @@ Note: Changes are applied immediately without restart!
         app.add_handler(CommandHandler("remove", self.cmd_remove))
         app.add_handler(CommandHandler("list", self.cmd_list))
         app.add_handler(CommandHandler("status", self.cmd_status))
+        app.add_handler(CommandHandler("online", self.cmd_online))
         app.add_handler(CommandHandler("set_bet", self.cmd_set_bet))
         app.add_handler(CommandHandler("set_max_points", self.cmd_set_max_points))
         app.add_handler(CommandHandler("enable_predictions", self.cmd_enable_predictions))
