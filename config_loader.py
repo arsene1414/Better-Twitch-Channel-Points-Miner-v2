@@ -13,11 +13,13 @@ CONFIG_FILE = "streamers_config.json"
 
 
 def create_default_config():
-    """Create a default configuration file"""
+    # no config found, write a minimal example so the user has something to edit
     default_config = {
         "streamers": [
             {
-                "username": "suns1de999",
+                "username": "example_streamer",
+                "online_at": 0,
+                "offline_at": 0,
                 "settings": {
                     "make_predictions": False,
                     "follow_raid": True,
@@ -52,23 +54,49 @@ def create_default_config():
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(default_config, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"âœ… Configuration file created: {CONFIG_FILE}")
+    logger.info(f"[+] default config created: {CONFIG_FILE}")
     return default_config
 
 
 def load_streamers_from_config():
-    """Load streamers from JSON configuration file"""
+    # string -> enum maps used when parsing bet settings from json
+    strategy_map = {
+        "SMART": Strategy.SMART,
+        "PERCENTAGE": Strategy.PERCENTAGE,
+        "SMART_MONEY": Strategy.SMART_MONEY,
+        "HIGH_ODDS": Strategy.HIGH_ODDS,
+        "MOST_VOTED": Strategy.MOST_VOTED
+    }
+    outcome_keys_map = {
+        "TOTAL_USERS": OutcomeKeys.TOTAL_USERS,
+        "TOTAL_POINTS": OutcomeKeys.TOTAL_POINTS,
+        "PERCENTAGE_USERS": OutcomeKeys.PERCENTAGE_USERS,
+        "ODDS_PERCENTAGE": OutcomeKeys.ODDS_PERCENTAGE,
+        "ODDS": OutcomeKeys.ODDS,
+        "TOP_POINTS": OutcomeKeys.TOP_POINTS
+    }
+    condition_map = {
+        "LTE": Condition.LTE,
+        "GTE": Condition.GTE,
+        "LT": Condition.LT,
+        "GT": Condition.GT
+    }
+    delay_mode_map = {
+        "FROM_START": DelayMode.FROM_START,
+        "FROM_END": DelayMode.FROM_END,
+        "PERCENTAGE": DelayMode.PERCENTAGE
+    }
 
     if not os.path.exists(CONFIG_FILE):
-        logger.warning(f"âš ï¸ File {CONFIG_FILE} not found. Creating default config...")
+        logger.warning(f"[!] {CONFIG_FILE} not found - creating default config")
         config = create_default_config()
     else:
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-            logger.info(f"âœ… Configuration loaded from {CONFIG_FILE}")
+            logger.info(f"[+] config loaded from {CONFIG_FILE}")
         except Exception as e:
-            logger.error(f"âŒ Error loading config: {e}")
+            logger.error(f"[-] error loading config: {e}")
             config = create_default_config()
 
     streamers_list = []
@@ -77,46 +105,14 @@ def load_streamers_from_config():
         try:
             username = streamer_data.get("username")
             settings_data = streamer_data.get("settings", {})
-
             bet_data = settings_data.get("bet", {})
             filter_data = bet_data.get("filter_condition", {})
-
-            strategy_map = {
-                "SMART": Strategy.SMART,
-                "PERCENTAGE": Strategy.PERCENTAGE,
-                "SMART_MONEY": Strategy.SMART_MONEY,
-                "HIGH_ODDS": Strategy.HIGH_ODDS,
-                "MOST_VOTED": Strategy.MOST_VOTED
-            }
-
-            outcome_keys_map = {
-                "TOTAL_USERS": OutcomeKeys.TOTAL_USERS,
-                "TOTAL_POINTS": OutcomeKeys.TOTAL_POINTS,
-                "PERCENTAGE_USERS": OutcomeKeys.PERCENTAGE_USERS,
-                "ODDS_PERCENTAGE": OutcomeKeys.ODDS_PERCENTAGE,
-                "ODDS": OutcomeKeys.ODDS,
-                "TOP_POINTS": OutcomeKeys.TOP_POINTS
-            }
-
-            condition_map = {
-                "LTE": Condition.LTE,
-                "GTE": Condition.GTE,
-                "LT": Condition.LT,
-                "GT": Condition.GT
-            }
-
-            delay_mode_map = {
-                "FROM_START": DelayMode.FROM_START,
-                "FROM_END": DelayMode.FROM_END,
-                "PERCENTAGE": DelayMode.PERCENTAGE
-            }
 
             filter_condition = FilterCondition(
                 by=outcome_keys_map.get(filter_data.get("by", "TOTAL_USERS"), OutcomeKeys.TOTAL_USERS),
                 where=condition_map.get(filter_data.get("where", "LTE"), Condition.LTE),
                 value=filter_data.get("value", 800)
             )
-
             bet_settings = BetSettings(
                 strategy=strategy_map.get(bet_data.get("strategy", "SMART"), Strategy.SMART),
                 percentage=bet_data.get("percentage", 5),
@@ -128,7 +124,6 @@ def load_streamers_from_config():
                 minimum_points=bet_data.get("minimum_points", 20000),
                 filter_condition=filter_condition
             )
-
             streamer_settings = StreamerSettings(
                 make_predictions=settings_data.get("make_predictions", False),
                 follow_raid=settings_data.get("follow_raid", True),
@@ -141,24 +136,25 @@ def load_streamers_from_config():
 
             streamer = Streamer(username, settings=streamer_settings)
             streamers_list.append(streamer)
-
-            logger.info(f"âœ… Streamer loaded: {username}")
+            logger.info(f"[+] streamer loaded: {username}")
 
         except Exception as e:
-            logger.error(f"âŒ Error loading streamer {streamer_data.get('username', 'Unknown')}: {e}")
+            logger.error(f"[-] error loading streamer {streamer_data.get('username', 'unknown')}: {e}")
             continue
 
-    logger.info(f"ðŸ“Š Total of {len(streamers_list)} streamers loaded from configuration")
+    logger.info(f"[*] {len(streamers_list)} streamers loaded from config")
     return streamers_list
 
 
 def export_current_config_to_json(streamers_list):
-    """Export current streamers configuration to JSON"""
+    # dump the current in-memory streamer list back to a json file
     config = {"streamers": []}
 
     for streamer in streamers_list:
         streamer_data = {
             "username": streamer.username if hasattr(streamer, 'username') else str(streamer),
+            "online_at": 0,
+            "offline_at": 0,
             "settings": {
                 "make_predictions": False,
                 "follow_raid": True,
@@ -185,13 +181,13 @@ def export_current_config_to_json(streamers_list):
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"âœ… Configuration exported to {output_file}")
+    logger.info(f"[+] config exported to {output_file}")
     return output_file
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     streamers = load_streamers_from_config()
-    print(f"\nâœ… {len(streamers)} streamers loaded successfully!")
+    print(f"\n[+] {len(streamers)} streamers loaded successfully!")
     for s in streamers:
-        print(f"  - {s.username}")
+        print(f"  -> {s.username}")

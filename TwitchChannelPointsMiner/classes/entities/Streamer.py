@@ -3,7 +3,11 @@ import logging
 import os
 import time
 from datetime import datetime
+from pathlib import Path
 from threading import Lock
+
+# streamers_config.json lives at the project root, 3 levels up from this file
+CONFIG_FILE = os.path.join(Path(__file__).resolve().parents[3], "streamers_config.json")
 
 from TwitchChannelPointsMiner.classes.Chat import ChatPresence, ThreadChat
 from TwitchChannelPointsMiner.classes.entities.Bet import BetSettings, DelayMode
@@ -124,10 +128,29 @@ class Streamer(object):
             else self.__repr__()
         )
 
+    def _persist_status(self):
+        # update online_at and offline_at directly inside streamers_config.json
+        try:
+            if not os.path.isfile(CONFIG_FILE):
+                return
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # find this streamer's entry and patch the timestamps in place
+            for entry in data.get("streamers", []):
+                if entry.get("username") == self.username:
+                    entry["online_at"] = self.online_at
+                    entry["offline_at"] = self.offline_at
+                    break
+            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"failed to persist streamer status: {e}")
+
     def set_offline(self):
         if self.is_online is True:
             self.offline_at = time.time()
             self.is_online = False
+            self._persist_status()
 
         self.toggle_chat()
 
@@ -144,6 +167,7 @@ class Streamer(object):
             self.online_at = time.time()
             self.is_online = True
             self.stream.init_watch_streak()
+            self._persist_status()
 
         self.toggle_chat()
 

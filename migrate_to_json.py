@@ -5,28 +5,29 @@ import re
 
 
 def extract_streamers_from_main():
-    """Extract streamers from main.py file"""
-
     try:
         with open('main.py', 'r', encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
-        print("âŒ Error: main.py file not found!")
+        print("[-] main.py not found")
         return None
 
+    # grab all Streamer("username") calls
     pattern = r'Streamer\("([^"]+)"'
     matches = re.findall(pattern, content)
 
     if not matches:
-        print("âš ï¸ No streamers found in main.py")
+        print("[!] no streamers found in main.py")
         return None
 
-    print(f"âœ… {len(matches)} streamers found!")
+    print(f"[+] {len(matches)} streamers found")
 
     streamers = []
     for username in matches:
         streamer_data = {
             "username": username.lower().strip(),
+            "online_at": 0,
+            "offline_at": 0,
             "settings": {
                 "make_predictions": False,
                 "follow_raid": True,
@@ -51,14 +52,12 @@ def extract_streamers_from_main():
             }
         }
         streamers.append(streamer_data)
-        print(f"  âœ“ {username}")
+        print(f"  -> {username}")
 
     return streamers
 
 
 def create_config_file(streamers):
-    """Create streamers_config.json file"""
-
     config = {
         "streamers": streamers,
         "global_settings": {
@@ -78,63 +77,56 @@ def create_config_file(streamers):
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
-
-        print(f"\nâœ… File created: {output_file}")
-        print(f"ðŸ“Š {len(streamers)} streamers exported")
+        print(f"\n[+] file created: {output_file}")
+        print(f"[*] {len(streamers)} streamers exported")
         return True
-
     except Exception as e:
-        print(f"âŒ Error creating file: {e}")
+        print(f"[-] error creating file: {e}")
         return False
 
 
 def main():
-    """Main function"""
-
     print("""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘                                                       â•‘
-â•‘   ðŸ”„ Migration to streamers_config.json              â•‘
-â•‘                                                       â•‘
-â•‘   This script will extract your streamers from       â•‘
-â•‘   main.py and create the JSON configuration file     â•‘
-â•‘                                                       â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
++-------------------------------------------------------+
+|                                                       |
+|   Migration to streamers_config.json                  |
+|                                                       |
+|   Extracts streamers from main.py and creates         |
+|   the JSON configuration file                         |
+|                                                       |
++-------------------------------------------------------+
     """)
 
-    print("ðŸ“‚ Searching for streamers in main.py...\n")
-
+    print("[*] searching for streamers in main.py...\n")
     streamers = extract_streamers_from_main()
 
     if not streamers:
-        print("\nâŒ Migration cancelled: no streamers found")
+        print("\n[-] migration cancelled: no streamers found")
         return
 
     print("\n" + "=" * 60)
-    print("ðŸ“‹ Preview of streamers to export:")
+    print("[*] preview of streamers to export:")
     print("=" * 60)
-
     for i, s in enumerate(streamers, 1):
         print(f"{i:2d}. {s['username']}")
-
     print("=" * 60)
 
-    response = input("\nâš ï¸ Create streamers_config.json? (y/n): ").lower()
+    response = input("\n[?] create streamers_config.json? (y/n): ").lower()
 
     if response == 'y':
         if create_config_file(streamers):
             print("\n" + "=" * 60)
-            print("âœ… Migration completed successfully!")
+            print("[+] migration completed successfully!")
             print("=" * 60)
-            print("\nðŸ“ Next steps:")
-            print("  1. Check streamers_config.json")
-            print("  2. Customize settings if needed")
-            print("  3. Run: python main_dynamic.py")
-            print("\nðŸ’¡ Tip: Keep a backup of your original main.py!")
+            print("\nnext steps:")
+            print("  1. check streamers_config.json")
+            print("  2. customize settings if needed")
+            print("  3. run: python main_dynamic.py")
+            print("\n[!] tip: keep a backup of your original main.py!")
         else:
-            print("\nâŒ Migration failed")
+            print("\n[-] migration failed")
     else:
-        print("\nâŒ Migration cancelled by user")
+        print("\n[-] migration cancelled by user")
 
 
 if __name__ == "__main__":
