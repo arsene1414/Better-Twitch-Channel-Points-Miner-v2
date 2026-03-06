@@ -69,6 +69,7 @@ class TwitchChannelPointsMiner:
         "original_streamers",
         "logs_file",
         "queue_listener",
+        "currently_watching",
     ]
 
     def __init__(
@@ -152,6 +153,7 @@ class TwitchChannelPointsMiner:
         self.running = False
         self.start_datetime = None
         self.original_streamers = []
+        self.currently_watching = []
 
         self.logs_file, self.queue_listener = configure_loggers(
             self.username, logger_settings
@@ -329,7 +331,7 @@ class TwitchChannelPointsMiner:
 
             self.minute_watcher_thread = threading.Thread(
                 target=self.twitch.send_minute_watched_events,
-                args=(self.streamers, self.priority),
+                args=(self.streamers, self.priority, 3, self),
             )
             self.minute_watcher_thread.name = "Minute watcher"
             self.minute_watcher_thread.start()

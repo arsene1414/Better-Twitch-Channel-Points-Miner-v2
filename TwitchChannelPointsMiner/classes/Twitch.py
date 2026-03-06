@@ -373,7 +373,7 @@ class Twitch(object):
             logger.error(f"Error with update_client_version: {e}")
             return self.client_version
 
-    def send_minute_watched_events(self, streamers, priority, chunk_size=3):
+    def send_minute_watched_events(self, streamers, priority, chunk_size=3, miner=None):
         while self.running:
             try:
                 streamers_index = [
@@ -476,6 +476,10 @@ class Twitch(object):
                         streamers_watching.update(streamers_with_multiplier[:remaining_watch_amount()])
 
                 streamers_watching = list(streamers_watching)[:max_watch_amount]
+
+                # expose the current watch list to the miner for external reading (e.g. telegram bot)
+                if miner is not None:
+                    miner.currently_watching = [streamers[i].username for i in streamers_watching]
 
                 for index in streamers_watching:
                     # next_iteration = time.time() + 60 / len(streamers_watching)
