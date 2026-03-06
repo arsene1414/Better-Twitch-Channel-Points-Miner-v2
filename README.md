@@ -37,7 +37,7 @@ On Linux, if you get timezone errors with apscheduler, the versions in `requirem
 At the project root:
 
 ```
-main.py
+main_dynamic.py
 TelegramBot.py
 config_loader.py
 auto_stats_reporter.py   # optional
@@ -69,18 +69,34 @@ To get your `TELEGRAM_CHAT_ID`: send a message to your bot then open `https://ap
 
 ### Migrating from an existing main.py
 
-If you already had streamers configured in `main.py`:
+If you already had streamers configured in `main.py`, use `migrate_to_json.py` to extract them into `streamers_config.json`.
+
+If `main.py` is still in the project root:
 
 ```bash
 python migrate_to_json.py
 ```
 
-It reads the `Streamer("username", ...)` calls and generates `streamers_config.json`. Starting from scratch, the file is created automatically on first run.
+If you moved or renamed it (or it's somewhere else on your machine):
+
+```bash
+python migrate_to_json.py --file /path/to/your/main.py
+```
+
+You can also specify a custom output path:
+
+```bash
+python migrate_to_json.py --file /path/to/main.py --output /path/to/streamers_config.json
+```
+
+The script scans for `Streamer("username")` calls, shows you a preview, asks for confirmation, and warns you before overwriting an existing config.
+
+Starting from scratch, `streamers_config.json` is created automatically on first run with an empty streamer list.
 
 ### Running
 
 ```bash
-python main.py
+python main_dynamic.py
 ```
 
 ---
@@ -99,7 +115,7 @@ python main.py
 
 ### Watch priority
 
-Twitch limits to 2 streams watched simultaneously. By default the miner picks based on the priority order defined in `main.py` (`STREAK > DROPS > ORDER`). You can override manually:
+Twitch limits to 2 streams watched simultaneously. By default the miner picks based on the priority order defined in `main_dynamic.py` (`STREAK > DROPS > ORDER`). You can override manually:
 
 **`/priority`** — shows the current 2 priority slots and offers online streamers as clickable buttons to fill any free slots.
 
@@ -195,7 +211,7 @@ The file is auto-generated, but here's the structure for reference:
 
 ## Automatic stats report (optional)
 
-`auto_stats_reporter.py` sends a Telegram summary at a regular interval. To enable it, add this in `main.py`:
+`auto_stats_reporter.py` sends a Telegram summary at a regular interval. To enable it, add this in `main_dynamic.py`:
 
 ```python
 from auto_stats_reporter import start_auto_reporter

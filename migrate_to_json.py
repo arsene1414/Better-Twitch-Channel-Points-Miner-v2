@@ -2,14 +2,20 @@
 
 import json
 import re
+import sys
+import os
+import argparse
 
 
-def extract_streamers_from_main():
+def extract_streamers_from_file(filepath):
     try:
-        with open('main.py', 'r', encoding='utf-8') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
-        print("[-] main.py not found")
+        print(f"[-] file not found: {filepath}")
+        return None
+    except Exception as e:
+        print(f"[-] error reading file: {e}")
         return None
 
     # grab all Streamer("username") calls
@@ -17,10 +23,10 @@ def extract_streamers_from_main():
     matches = re.findall(pattern, content)
 
     if not matches:
-        print("[!] no streamers found in main.py")
+        print(f"[!] no Streamer(...) calls found in {filepath}")
         return None
 
-    print(f"[+] {len(matches)} streamers found")
+    print(f"[+] {len(matches)} streamers found in {filepath}")
 
     streamers = []
     for username in matches:
@@ -57,7 +63,14 @@ def extract_streamers_from_main():
     return streamers
 
 
-def create_config_file(streamers):
+def create_config_file(streamers, output_path="streamers_config.json"):
+    # don't overwrite an existing config without confirmation
+    if os.path.exists(output_path):
+        response = input(f"\n[!] {output_path} already exists. overwrite? (y/n): ").lower()
+        if response != 'y':
+            print("[-] cancelled")
+            return False
+
     config = {
         "streamers": streamers,
         "global_settings": {
@@ -65,19 +78,13 @@ def create_config_file(streamers):
             "default_max_points": 1000,
             "default_make_predictions": False,
             "default_strategy": "SMART"
-        },
-        "metadata": {
-            "created_by": "migrate_to_json.py",
-            "total_streamers": len(streamers)
         }
     }
 
-    output_file = "streamers_config.json"
-
     try:
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
-        print(f"\n[+] file created: {output_file}")
+        print(f"\n[+] file created: {output_path}")
         print(f"[*] {len(streamers)} streamers exported")
         return True
     except Exception as e:
@@ -86,35 +93,60 @@ def create_config_file(streamers):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Extract Streamer() calls from a main.py and generate streamers_config.json"
+    )
+    parser.add_argument(
+        "--file", "-f",
+        default=None,
+        help="path to the main.py file to read (default: main.py in current directory)"
+    )
+    parser.add_argument(
+        "--output", "-o",
+        default="streamers_config.json",
+        help="output path for the JSON config (default: streamers_config.json)"
+    )
+    args = parser.parse_args()
+
     print("""
 +-------------------------------------------------------+
 |                                                       |
 |   Migration to streamers_config.json                  |
 |                                                       |
-|   Extracts streamers from main.py and creates         |
+|   Extracts Streamer() calls from main.py and creates  |
 |   the JSON configuration file                         |
 |                                                       |
 +-------------------------------------------------------+
     """)
 
-    print("[*] searching for streamers in main.py...\n")
-    streamers = extract_streamers_from_main()
+    # resolve source file
+    if args.file:
+        source_file = args.file
+    else:
+        source_file = "main.py"
+        if not os.path.exists(source_file):
+            print("[-] main.py not found in current directory.")
+            print("[*] tip: use --file /path/to/your/main.py to specify a different location")
+            sys.exit(1)
+
+    print(f"[*] reading from: {os.path.abspath(source_file)}\n")
+    streamers = extract_streamers_from_file(source_file)
 
     if not streamers:
         print("\n[-] migration cancelled: no streamers found")
-        return
+        sys.exit(1)
 
     print("\n" + "=" * 60)
-    print("[*] preview of streamers to export:")
+    print("[*] streamers to export:")
     print("=" * 60)
     for i, s in enumerate(streamers, 1):
         print(f"{i:2d}. {s['username']}")
     print("=" * 60)
 
-    response = input("\n[?] create streamers_config.json? (y/n): ").lower()
+    response = input(f"\n[?] create {args.output}? (y/n): ").lower()
 
     if response == 'y':
-        if create_config_file(streamers):
+        if create_config_file(streamers, args.output):
             print("\n" + "=" * 60)
             print("[+] migration completed successfully!")
             print("=" * 60)
@@ -122,9 +154,9 @@ def main():
             print("  1. check streamers_config.json")
             print("  2. customize settings if needed")
             print("  3. run: python main_dynamic.py")
-            print("\n[!] tip: keep a backup of your original main.py!")
         else:
             print("\n[-] migration failed")
+            sys.exit(1)
     else:
         print("\n[-] migration cancelled by user")
 
