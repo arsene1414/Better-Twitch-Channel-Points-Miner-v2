@@ -46,6 +46,8 @@ ANALYTICS_HOST=127.0.0.1
 ANALYTICS_PORT=5000
 ```
 
+`TWITCH_PASSWORD` is optional. If you leave it empty, the miner will prompt you with a code to enter at [twitch.tv/activate](https://twitch.tv/activate) to authenticate without a password.
+
 To get your `TELEGRAM_CHAT_ID`: send a message to your bot then open `https://api.telegram.org/bot<TOKEN>/getUpdates`.
 
 ### Running
