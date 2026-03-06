@@ -99,7 +99,7 @@ class AutoStatsReporter:
 
 
 def start_auto_reporter(miner_instance, telegram_token, chat_id, interval_hours=6):
-    # usage in main_dynamic.py:
+    # usage in main.py:
     #   from auto_stats_reporter import start_auto_reporter
     #   start_auto_reporter(miner_instance=twitch_miner, telegram_token=TELEGRAM_TOKEN,
     #                       chat_id=TELEGRAM_CHAT_ID, interval_hours=6)
@@ -121,8 +121,8 @@ def start_auto_reporter(miner_instance, telegram_token, chat_id, interval_hours=
 
 
 if __name__ == "__main__":
-    print("[!] this module should be imported in main_dynamic.py")
-    print("\nadd in your main_dynamic.py:")
+    print("[!] this module should be imported in main.py")
+    print("\nadd in your main.py:")
     print("""
     from auto_stats_reporter import start_auto_reporter
 

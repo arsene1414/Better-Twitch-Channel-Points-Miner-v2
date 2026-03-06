@@ -168,3 +168,5 @@ Dockerfile
 QUICKSTART.md
 README_TELEGRAM_BOT.md
 TRAFFIC.md
+.pre-commit-config.yaml
+pickle_view.py

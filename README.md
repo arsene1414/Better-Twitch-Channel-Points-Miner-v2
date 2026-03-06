@@ -37,11 +37,16 @@ On Linux, if you get timezone errors with apscheduler, the versions in `requirem
 At the project root:
 
 ```
-main_dynamic.py
+main.py
 TelegramBot.py
 config_loader.py
 auto_stats_reporter.py   # optional
-migrate_to_json.py       # one-shot migration if coming from the classic main.py
+```
+
+In the `tools/` subfolder:
+
+```
+tools/migrate_to_json.py
 ```
 
 Replace in `TwitchChannelPointsMiner/`:
@@ -69,34 +74,23 @@ To get your `TELEGRAM_CHAT_ID`: send a message to your bot then open `https://ap
 
 ### Migrating from an existing main.py
 
-If you already had streamers configured in `main.py`, use `migrate_to_json.py` to extract them into `streamers_config.json`.
+`migrate_to_json.py` lives in the `tools/` subfolder. If you have an old `main.py` with your streamers hardcoded:
 
-If `main.py` is still in the project root:
-
-```bash
-python migrate_to_json.py
-```
-
-If you moved or renamed it (or it's somewhere else on your machine):
+1. Drop your old `main.py` into `tools/`
+2. Run the script from the project root:
 
 ```bash
-python migrate_to_json.py --file /path/to/your/main.py
+python tools/migrate_to_json.py
 ```
 
-You can also specify a custom output path:
+It scans for `Streamer("username")` calls, shows a preview, asks for confirmation, and writes `streamers_config.json` directly to the project root. It also warns you before overwriting an existing config.
 
-```bash
-python migrate_to_json.py --file /path/to/main.py --output /path/to/streamers_config.json
-```
-
-The script scans for `Streamer("username")` calls, shows you a preview, asks for confirmation, and warns you before overwriting an existing config.
-
-Starting from scratch, `streamers_config.json` is created automatically on first run with an empty streamer list.
+Starting from scratch, `streamers_config.json` is created automatically on first run.
 
 ### Running
 
 ```bash
-python main_dynamic.py
+python main.py
 ```
 
 ---
@@ -115,7 +109,7 @@ python main_dynamic.py
 
 ### Watch priority
 
-Twitch limits to 2 streams watched simultaneously. By default the miner picks based on the priority order defined in `main_dynamic.py` (`STREAK > DROPS > ORDER`). You can override manually:
+Twitch limits to 2 streams watched simultaneously. By default the miner picks based on the priority order defined in `main.py` (`STREAK > DROPS > ORDER`). You can override manually:
 
 **`/priority`** — shows the current 2 priority slots and offers online streamers as clickable buttons to fill any free slots.
 
@@ -211,7 +205,7 @@ The file is auto-generated, but here's the structure for reference:
 
 ## Automatic stats report (optional)
 
-`auto_stats_reporter.py` sends a Telegram summary at a regular interval. To enable it, add this in `main_dynamic.py`:
+`auto_stats_reporter.py` sends a Telegram summary at a regular interval. To enable it, add this in `main.py`:
 
 ```python
 from auto_stats_reporter import start_auto_reporter
