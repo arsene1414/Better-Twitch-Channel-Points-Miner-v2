@@ -20,46 +20,22 @@ The idea: manage the miner entirely from Telegram without touching config files 
 
 ### Requirements
 
-- The base miner working (valid Twitch cookies, dependencies installed)
 - Python 3.11+
 - A Telegram bot created via [@BotFather](https://t.me/BotFather)
 
-### Dependencies
+### Clone and install
 
 ```bash
+git clone https://github.com/your_username/your_repo.git
+cd your_repo
 pip install -r requirements.txt
 ```
 
 On Linux, if you get timezone errors with apscheduler, the versions in `requirements.txt` are already pinned to avoid that (`apscheduler==3.9.1`, `tzlocal==2.1`).
 
-### Files to place
-
-At the project root:
-
-```
-main.py
-TelegramBot.py
-config_loader.py
-auto_stats_reporter.py   # optional
-```
-
-In the `tools/` subfolder:
-
-```
-tools/migrate_to_json.py
-```
-
-Replace in `TwitchChannelPointsMiner/`:
-
-```
-TwitchChannelPointsMiner/Twitch.py
-TwitchChannelPointsMiner/TwitchChannelPointsMiner.py
-TwitchChannelPointsMiner/classes/entities/Streamer.py
-```
-
 ### Environment variables
 
-Create a `.env` at the project root:
+An `example.env` file is included at the project root. Just rename it to `.env` and fill in your values:
 
 ```env
 TWITCH_USERNAME=your_username
@@ -72,26 +48,28 @@ ANALYTICS_PORT=5000
 
 To get your `TELEGRAM_CHAT_ID`: send a message to your bot then open `https://api.telegram.org/bot<TOKEN>/getUpdates`.
 
-### Migrating from an existing main.py
-
-`migrate_to_json.py` lives in the `tools/` subfolder. If you have an old `main.py` with your streamers hardcoded:
-
-1. Drop your old `main.py` into `tools/`
-2. Run the script from the project root:
-
-```bash
-python tools/migrate_to_json.py
-```
-
-It scans for `Streamer("username")` calls, shows a preview, asks for confirmation, and writes `streamers_config.json` directly to the project root. It also warns you before overwriting an existing config.
-
-Starting from scratch, `streamers_config.json` is created automatically on first run.
-
 ### Running
 
 ```bash
 python main.py
 ```
+
+`streamers_config.json` is created automatically on first run. Add your first streamers via `/add <username>` in Telegram.
+
+### Coming from the original fork
+
+If you were already using [Better-Twitch-Channel-Points-Miner-v2](https://github.com/rdavydov/Twitch-Channel-Points-Miner-v2) and had streamers hardcoded in a `main.py`, you can migrate them:
+
+1. Drop your old `main.py` into the `tools/` folder
+2. Run:
+
+```bash
+python tools/migrate_to_json.py
+```
+
+It scans for `Streamer("username")` calls, shows a preview, asks for confirmation, and writes `streamers_config.json` to the project root. It warns before overwriting an existing config.
+
+Your cookies (`cookies/` folder) from the original project are compatible — just copy them over.
 
 ---
 
